@@ -10,20 +10,15 @@ namespace ControleEstoque.Web.Controllers
     public class CadastroController : Controller
     {
 
+        private const string _senhaPadrao = "{$127,$1&&}";
+
+        #region Grupo de produtos
 
         [Authorize]
         public ActionResult GrupoProduto()
         {
             return View(GrupoProdutoModel.RecuperarLista());
         }
-
-
-
-        //[Authorize]
-        //public ActionResult RecuperarGrupoProduto()
-        //{
-        //    return View(_listaGrupoProduto);
-        //}
 
 
         [HttpPost]
@@ -39,7 +34,7 @@ namespace ControleEstoque.Web.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult ExcluirGrupoProduto(int id)
         {
-                       
+
             return Json(GrupoProdutoModel.ExcluirPeloId(id));
         }
 
@@ -73,7 +68,7 @@ namespace ControleEstoque.Web.Controllers
                     {
                         resultado = "ERRO";
                     }
-                   
+
                 }
                 catch (Exception ex)
                 {
@@ -85,7 +80,7 @@ namespace ControleEstoque.Web.Controllers
             return Json(new { Resultado = resultado, Mensagens = mensagens, IdSalvo = idsalvo });
         }
 
-
+        #endregion
 
 
         [Authorize]
@@ -142,10 +137,82 @@ namespace ControleEstoque.Web.Controllers
             return View();
         }
 
+        #region Usuarios
+
         [Authorize]
         public ActionResult Usuario()
         {
-            return View();
+
+            ViewBag.SenhaPadrao = _senhaPadrao;
+
+            return View(UsuarioModel.RecuperarLista());
         }
+
+
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public ActionResult RecuperarUsuario(int id)
+        {
+            return Json(UsuarioModel.RecuperarPeloId(id));
+        }
+
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public ActionResult ExcluirUsuario(int id)
+        {
+
+            return Json(UsuarioModel.ExcluirPeloId(id));
+        }
+
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public ActionResult SalvarUsuario(UsuarioModel model)
+        {
+
+            var resultado = "OK";
+            var mensagens = new List<string>();
+            var idsalvo = string.Empty;
+
+            if (!ModelState.IsValid)
+            {
+                resultado = "AVISO";
+
+                mensagens = ModelState.Values.SelectMany(x => x.Errors).Select(x => x.ErrorMessage).ToList();
+            }
+            else
+            {
+                try
+                {
+
+                    if (model.Senha == _senhaPadrao)
+                    {
+                        model.Senha = "";
+                    }
+                    var id = model.Salvar();
+
+                    if (id > 0)
+                    {
+                        idsalvo = id.ToString();
+                    }
+                    else
+                    {
+                        resultado = "ERRO";
+                    }
+
+                }
+                catch (Exception ex)
+                {
+
+                    resultado = "ERRO";
+                }
+
+            }
+            return Json(new { Resultado = resultado, Mensagens = mensagens, IdSalvo = idsalvo });
+        }
+
+        #endregion
     }
 }
